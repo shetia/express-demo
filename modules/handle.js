@@ -1,4 +1,12 @@
 /*
+ * @Descripttion:
+ * @version:
+ * @Author: shetia
+ * @Date: 2019-09-03 20:47:32
+ * @LastEditors: somebody
+ * @LastEditTime: 2019-09-03 21:41:53
+ */
+/*
     数据增删改查模块封装
     req.query 解析GET请求中的参数 包含在路由中每个查询字符串参数属性的对象，如果没有则为{}
     req.params 包含映射到指定的路线“参数”属性的对象,如果有route/user/：name，那么“name”属性可作为req.params.name
@@ -18,25 +26,25 @@ var json = require('./json');
 // 使用连接池，提升性能
 var pool = mysql.createPool(poolextend({}, mysqlconfig));
 var userData = {
-    add: function(req, res, next) {
-        pool.getConnection(function(err, connection) {
+    add: function (req, res, next) {
+        pool.getConnection(function (err, connection) {
             var param = req.query || req.params;
             console.log(param)
-            connection.query(sql.insert, [param.id, param.name, param.age], function(err, result) {
+            connection.query(sql.insert, [param.id, param.name, param.age], function (err, result) {
                 if (result) {
                     result = 'add'
                 }
                 // 以json形式，把操作结果返回给前台页面
                 json(res, result);
-                // 释放连接 
+                // 释放连接
                 connection.release();
             });
         });
     },
-    delete: function(req, res, next) {
-        pool.getConnection(function(err, connection) {
+    delete: function (req, res, next) {
+        pool.getConnection(function (err, connection) {
             var id = +req.query.id;
-            connection.query(sql.delete, id, function(err, result) {
+            connection.query(sql.delete, id, function (err, result) {
                 if (result.affectedRows > 0) {
                     result = 'delete';
                 } else {
@@ -47,14 +55,14 @@ var userData = {
             });
         });
     },
-    update: function(req, res, next) {
+    update: function (req, res, next) {
         var param = req.body;
         if (param.name == null || param.age == null || param.id == null) {
             json(res, undefined);
             return;
         }
-        pool.getConnection(function(err, connection) {
-            connection.query(sql.update, [param.name, param.age, +param.id], function(err, result) {
+        pool.getConnection(function (err, connection) {
+            connection.query(sql.update, [param.name, param.age, +param.id], function (err, result) {
                 if (result.affectedRows > 0) {
                     result = 'update'
                 } else {
@@ -65,10 +73,10 @@ var userData = {
             });
         });
     },
-    queryById: function(req, res, next) {
+    queryById: function (req, res, next) {
         var id = +req.query.id;
-        pool.getConnection(function(err, connection) {
-            connection.query(sql.queryById, id, function(err, result) {
+        pool.getConnection(function (err, connection) {
+            connection.query(sql.queryById, id, function (err, result) {
                 if (result != '') {
                     var _result = result;
                     result = {
@@ -83,10 +91,10 @@ var userData = {
             });
         });
     },
-    queryByName: function(req, res, next) {
-        var name = +req.query.name;
-        pool.getConnection(function(err, connection) {
-            connection.query(sql.queryByName, name, function(err, result) {
+    queryByName: function (req, res, next) {
+        var name = req.query.name;
+        pool.getConnection(function (err, connection) {
+            connection.query(sql.queryByName, name, function (err, result) {
                 if (result != '') {
                     var _result = result;
                     result = {
@@ -101,9 +109,9 @@ var userData = {
             });
         });
     },
-    queryAll: function(req, res, next) {
-        pool.getConnection(function(err, connection) {
-            connection.query(sql.queryAll, function(err, result) {
+    queryAll: function (req, res, next) {
+        pool.getConnection(function (err, connection) {
+            connection.query(sql.queryAll, function (err, result) {
                 if (result != '') {
                     var _result = result;
                     result = {
