@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    html,body{
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height:100%;
+      
+    }
+    #modal{
+      width: 100%;
+      height:100%;
+      background:rgba(0,0,0,.8);
+      position:fixed;
+      top:0px;
+      left:0px;
+      display:none;
+    }
+    .dialog-box{
+      width: 300px;
+      height: 200px;
+      background: #ffffff;
+      border-radius: 3px;
+      padding:10px;
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+    }
+    .dialog-box__footer{
+      position:absolute;
+      bottom:10px;
+      right:10px;
+      
+    }
+    .dialog-box__footer button{
+      cursor: pointer;
+    }
+    .primary{
+      background:#0f82cf;
+      color:#fff;
+    }
+    button{
+      border:none;
+      background:#fff;
+      border-radius: 3px;
+      padding:10px 20px;
+      border:1px solid #ccc;
+      margin:5px;
+      cursor: pointer;
+    }
+    .main-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-around;
+      margin-bottom:10px;
+    }
+    input{
+      border-radius: 3px;
+      padding:10px 10px;
+      border:1px solid #ccc;
+    }
+    #tips{
+      position:fixed;
+      top:30px;
+      left:50%;
+      transform:translateX(-50%);
+      width:auto;
+      padding:5px 20px; 
+      border-radius: 5px;
+      color:#fff;
+      transition:all 1s;
+      display:none;
+    }
+    .table-box{
+      
+      width:auto;
+      text-align: center;
+    }
+    .table-box table{
+      margin:50px auto;
+    }
+    .handler{
+      width: 500px;
+      margin:10px auto;
+    }
+  </style>
+</head>
+<body> 
+ 
+  <div class="handler">
+      <input type="text" id="searchValue" placeholder="请输入名字查询">
+      <button id="searchBtn">查询全部</button>
+      <button id="addBtn" class="primary">新增</button>
+  </div>
+
+  <div class="table-box">
+    <table id="box" border="1" cellspacing="0">
+      
+    </table>
+  </div>
+  <!-- 新增弹框 -->
+  <div id="modal">
+    <div class="dialog-box">  
+      <div class="dialog-box__main">
+        <div class="main-item">
+          <label for="">名字</label>
+          <input type="text" id="nameValue">
+        </div>
+        <div class="main-item">
+          <label for="">年龄</label>
+          <input type="text" id="ageValue">
+        </div> 
+      </div>
+      <div class="dialog-box__footer">
+        <button id="cancelBtn">取消</button>
+        <button id="confirmBtn" class="primary">确定</button>
+      </div> 
+    </div>
+  </div>
+  <!-- 提示tips -->
+  <div id="tips"> 
+  </div>
+</body>
+</html>
+<script>
+  let searchBtn = document.getElementById('searchBtn')
+  let searchValue = document.getElementById('searchValue')
+  let box = document.getElementById('box')
+  let nameValue = document.getElementById('nameValue')
+  let ageValue = document.getElementById('ageValue')
+  let addBtn = document.getElementById('addBtn')
+  let confirmBtn = document.getElementById('confirmBtn')
+  let cancelBtn = document.getElementById('cancelBtn')
+  let modal = document.getElementById('modal')
+  let tipsBox = document.getElementById('tips')
+  let delBtn = document.querySelectorAll('.addBtn')
+  let flag = 'add' 
+  let gobj = {}
+  window.onload = function(){
+    getList()
+  }
+  searchBtn.onclick = function(){ 
+    getListByName(searchValue.value)
+  }
+  // 编辑和删除
+  box.onclick = function(e){  
+    if(e.target.className === 'updateBtn'){
+      modal.style.display = 'block'
+      flag = 'edit'
+      let obj = JSON.parse(e.target.getAttribute('data-item'))
+      gobj = obj
+      detail(obj)
+    }else if(e.target.className === 'delBtn'){ 
+      let id = e.target.getAttribute('data-id') 
+      del(id)
+    }
+  }
+  function detail(item){
+    nameValue.value = item.name
+    ageValue.value = item.age
+  }
+
+  // 新增
+  addBtn.onclick = function(){
+    modal.style.display = 'block' 
+    flag = 'add'
+    nameValue.value = ''
+    ageValue.value = ''
+  }
+  // 取消
+  cancelBtn.onclick = function(){
+    modal.style.display = 'none' 
+  }
+  // 确定
+  confirmBtn.onclick = function(){
+    modal.style.display = 'none'
+   if(flag === 'add'){
+    add()
+   }else if(flag === 'edit'){
+    update(gobj.id)
+   } 
+  }
+
+  
+
+  // 封装个提示函数
+  function Tips(){ 
+    this.error=function(str,delay){
+      tipsBox.style.display = 'block' 
+      tipsBox.style.background = 'hotpink' 
+      tipsBox.innerHTML = str
+      setTimeout(()=>{
+        tipsBox.style.display = 'none'
+      },delay||3000)
+    }
+    this.success=function(str,delay){
+      tipsBox.style.display = 'block' 
+      tipsBox.style.background = '#78d626' 
+      tipsBox.innerHTML = str
+      setTimeout(()=>{
+        tipsBox.style.display = 'none'
+      },delay||3000)
+    }
+    
+  }
+  let tips = new Tips()
+
+  // 请求
+  function del(id){
+    _ajax({
+      url:'http://localhost:3000/deleteUser',
+      data:{
+        id:id, 
+      },
+      success:function(res){ 
+        if(res.code==='200'){
+          tips.success(res.msg)
+          getList()
+        }else{
+          tips.error(res.msg)
+        }
+      },
+      error:function(e){
+        console.log(e,'error')
+      }
+    })
+  }
+  function getList(){
+    box.innerHTML = ''
+    let trNode = document.createElement('tr')
+    trNode.innerHTML = `<th>名字</th><th>年龄</th><th>操作</th>`
+    box.appendChild(trNode)
+    _ajax({
+      url:'http://localhost:3000/queryAll',
+      success:function(res){  
+        let resData = res.data || []
+        if(resData){ 
+          resData.forEach(item=>{
+            let trNode = document.createElement('tr')
+            trNode.innerHTML = `<th>${item.name}</th>
+            <th>${item.age}</th>
+            <th  >
+              <span class="updateBtn"  data-item='${JSON.stringify(item)}'>编辑</span>&nbsp;
+              <span class="delBtn" data-id="${item.id}">删除</span>
+            </th>`
+            box.appendChild(trNode)
+          })
+        } 
+        
+      },
+      error:function(e){
+        console.log(e,'error')
+      }
+    })
+  }
+  function getListByName(name){
+    box.innerHTML = ''
+    let trNode = document.createElement('tr')
+    trNode.innerHTML = `<th>名字</th><th>年龄</th><th>操作</th>`
+    box.appendChild(trNode)
+    _ajax({
+      url:'http://localhost:3000/queryName',
+      data:{
+        name:name
+      },
+      success:function(res){  
+        let resData = res.data || []
+        if(resData){ 
+          resData.forEach(item=>{
+            let trNode = document.createElement('tr')
+            trNode.innerHTML = `<th>${item.name}</th>
+            <th>${item.age}</th>
+            <th  >
+              <span class="updateBtn"  data-item='${JSON.stringify(item)}'>编辑</span>&nbsp;
+              <span class="delBtn" data-id="${item.id}">删除</span>
+            </th>`
+            box.appendChild(trNode)
+          })
+        } 
+        
+      },
+      error:function(e){
+        console.log(e,'error')
+      }
+    })
+  }
+  function add(){
+    _ajax({
+      url:'http://localhost:3000/addUser',
+      data:{
+        name:nameValue.value,
+        age:ageValue.value,
+      },
+      success:function(res){ 
+        if(res.code==='200'){ 
+          tips.success(res.msg)
+          getList()
+        }else{
+          tips.error(res.msg)
+        }
+      },
+      error:function(e){
+        console.log(e,'error')
+      }
+    })
+  }
+  function update(id){
+    _ajax({
+      url:'http://localhost:3000/updateUser',
+      method:'POST',
+      data:{
+        id:id,
+        name:nameValue.value,
+        age:ageValue.value,
+      },
+      success:function(res){ 
+        if(res.code==='200'){
+          tips.success(res.msg)
+          getList()
+        }else{
+          tips.error(res.msg)
+        }
+      },
+      error:function(e){
+        console.log(e,'error')
+      }
+    })
+  }
+
+
+  // 封装请求函数
+  function _ajax(option){
+    let url = option.url || ''
+    let method = option.method ? option.method.toUpperCase() : 'GET'
+    let data = option.data || null
+    var formData = []
+
+    for (var key in data) {
+      formData.push(''.concat(key, '=', data[key]))
+    }
+
+    data = formData.join('&')
+    if (method === 'GET') {
+      url += location.search.length === 0 ? ''.concat('?', data) : ''.concat('&', data)
+    }
+    
+
+
+    let xhr = new XMLHttpRequest()
+    xhr.open(method,url,true) 
+    xhr.responseType = option.responseType || 'json'
+    xhr.onreadystatechange=()=>{
+      if(xhr.readyState === 4){ 
+        if(xhr.status === 200){
+          option.success(xhr.response)
+        }else{
+          option.error()
+        }
+      } 
+    }
+
+    if(method==='POST'){
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+    }
+    xhr.send(method === 'POST' ? data : null)
+  }
+  
+
+</script>
