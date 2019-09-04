@@ -23,7 +23,7 @@
       height: 100%;
       overflow: hidden;
     }
-
+    /* 新增弹框 */
     #modal {
       width: 100%;
       height: 100%;
@@ -32,6 +32,7 @@
       top: 0px;
       left: 0px;
       display: none;
+      transition:all 1s;
     }
 
     .dialog-box {
@@ -43,9 +44,12 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%); 
+      transition:all 1s;
     }
-
+    .dialog-box__main{
+      margin-top: 30px;
+    }
     .dialog-box__footer {
       position: absolute;
       bottom: 10px;
@@ -57,8 +61,7 @@
       cursor: pointer;
     }
 
-    
-
+    /* 新增弹框样式 结束 */
     button {
       border: none;
       background: #fff;
@@ -119,6 +122,7 @@
     #box{
       border: 1px solid #ccc;
       border-bottom:none;
+      min-width: 600px;
     }
 
     #box tr th,#box tr td{
@@ -135,7 +139,38 @@
     }
 
 
-
+    /* 确定弹框 */
+    #confirmModal{
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, .8);
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      display: none;
+      transition:all 1s;
+    }
+    .confirm-box {
+      width: 300px;
+      height: 200px;
+      background: #ffffff;
+      border-radius: 3px;
+      padding: 10px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); 
+      transition:all 1s;
+    }
+    #confirmMsg{
+      font-size:16px;
+      text-align:center;
+      margin-top:40px;
+    }
+    .title{
+      font-size:18px;
+      text-align:center;
+    }
   </style>
 </head>
 
@@ -159,11 +194,11 @@
       <div class="dialog-box__main">
         <div class="main-item">
           <label for="">名字</label>
-          <input type="text" id="nameValue">
+          <input type="text"  placeholder="请输入名字" id="nameValue">
         </div>
         <div class="main-item">
-          <label for="">年龄</label>
-          <input type="text" id="ageValue">
+          <label for="" >年龄</label>
+          <input type="text" placeholder="请输入数字" id="ageValue">
         </div>
       </div>
       <div class="dialog-box__footer">
@@ -175,27 +210,50 @@
   <!-- 提示tips -->
   <div id="tips">
   </div>
+  <!-- 确定弹框 -->
+  <div id="confirmModal">
+    <div class="confirm-box">
+        <h3 class="title">提示</h3>
+        <div id="confirmMsg">确定删除？</div>
+        <div class="dialog-box__footer">
+            <button id="confirmCancel">取消</button>
+            <button id="confirmOK" class="primary">确定</button>
+          </div>
+    </div> 
+  </div>
 </body>
 
 </html>
 <script>
-  let searchBtn = document.getElementById('searchBtn')
-  let resetBtn = document.getElementById('resetBtn')
-  let searchValue = document.getElementById('searchValue')
-  let box = document.getElementById('box')
-  let nameValue = document.getElementById('nameValue')
-  let ageValue = document.getElementById('ageValue')
-  let addBtn = document.getElementById('addBtn')
-  let confirmBtn = document.getElementById('confirmBtn')
-  let cancelBtn = document.getElementById('cancelBtn')
-  let modal = document.getElementById('modal')
-  let tipsBox = document.getElementById('tips')
-  let delBtn = document.querySelectorAll('.addBtn')
+  function queryDom(name){
+    return document.querySelector(name)
+  }
+  let dialogBox = queryDom('.dialog-box')
+  let confirmModal = queryDom('#confirmModal')
+  let confirmMsg = queryDom('#confirmMsg')
+  let confirmCancel = queryDom('#confirmCancel')
+  let confirmOK = queryDom('#confirmOK')
+  let searchBtn = queryDom('#searchBtn')
+  let resetBtn = queryDom('#resetBtn')
+  let searchValue = queryDom('#searchValue')
+  let box = queryDom('#box')
+  let nameValue = queryDom('#nameValue')
+  let ageValue = queryDom('#ageValue')
+  let addBtn = queryDom('#addBtn')
+  let confirmBtn = queryDom('#confirmBtn')
+  let cancelBtn = queryDom('#cancelBtn')
+  let modal = queryDom('#modal')
+  let tipsBox = queryDom('#tips')
+  let delBtn = queryDom('.addBtn')
+
+  // 约定一个变量控制是新增还是编辑
   let flag = 'add'
-  let gobj = {}
+  let gobj = {}  // 用来临时存储编辑数据
+  // 页面加载的时候查询一次列表
   window.onload = function () {
     getList()
   }
+  /* ------------------点击事件部分---------------------------- */
   searchBtn.onclick = function () {
     getListByName(searchValue.value)
   }
@@ -205,17 +263,23 @@
     getList()
   }
   // 编辑和删除
-  box.onclick = function (e) {
-    console.dir( e.target)
+  box.onclick = function (e) { 
     if (e.target.className.indexOf('updateBtn')>-1) {
-      modal.style.display = 'block'
+      modal.style.display = 'block' 
+      modal.style.opacity = 1
+      dialogBox.style.left = '50%'
       flag = 'edit'
       let obj = JSON.parse(e.target.getAttribute('data-item'))
       gobj = obj
       detail(obj)
     } else if (e.target.className.indexOf('delBtn')>-1) {
       let id = e.target.getAttribute('data-id')
-      del(id)
+
+      confirmBox('此操作会删除该行数据，是否确定？').then(function(){
+        del(id)
+      }).catch(function(){
+        console.log('取消删除')
+      })
     }
   }
 
@@ -227,47 +291,96 @@
   // 新增
   addBtn.onclick = function () {
     modal.style.display = 'block'
+    modal.style.opacity = 1
+    dialogBox.style.left = '50%'
     flag = 'add'
     nameValue.value = ''
     ageValue.value = ''
   }
   // 取消
   cancelBtn.onclick = function () {
-    modal.style.display = 'none'
+    setTimeout(function() {
+      modal.style.display = 'none'
+    }, 1000);
+    modal.style.opacity = 0
+    dialogBox.style.left = '-300px'
   }
   // 确定
-  confirmBtn.onclick = function () {
-    modal.style.display = 'none'
+  confirmBtn.onclick = function () { 
+    // 校验不能为空
+    if(!ageValue.value||!nameValue.value){
+      tips.error('请输入')
+      return
+    }
+    // 校验年龄是否为数字
+    if(!/^\d*$/g.test(ageValue.value)){
+      tips.error('年龄请输入数字')
+      return
+    }
+    setTimeout(function() {
+      modal.style.display = 'none'
+    }, 1000);
+    modal.style.opacity = 0
+    dialogBox.style.left = '-300px'
     if (flag === 'add') {
       add()
     } else if (flag === 'edit') {
       update(gobj.id)
     }
   }
+  /* ------------------点击事件部分---------------------------- */
 
+  /* ----------------工具函数部分-------------- */
   // 封装个提示函数
   function Tips() {
+     
+    var loop
     this.error = function (str, delay) {
+      if(loop){
+        clearTimeout(loop)
+      }
       tipsBox.style.display = 'block'
       tipsBox.style.background = '#ff6666'
       tipsBox.innerHTML = str
-      setTimeout(() => {
+      loop = setTimeout(() => {
         tipsBox.style.display = 'none'
       }, delay || 3000)
     }
     this.success = function (str, delay) {
+      if(loop){
+        clearTimeout(loop)
+      }
       tipsBox.style.display = 'block'
       tipsBox.style.background = '#78d626'
       tipsBox.innerHTML = str
-      setTimeout(() => {
+     loop = setTimeout(() => {
         tipsBox.style.display = 'none'
       }, delay || 3000)
     }
 
   }
   let tips = new Tips()
+  // 封装个二次确认弹框
+  function confirmBox(msg){
+    msg = msg || '确定删除？'
+    confirmMsg.innerHTML = msg
+    confirmModal.style.display = 'block'
+    return new Promise(function (resolve,reject) {
+      confirmOK.onclick = function(){ 
+        confirmModal.style.display = 'none' 
+        resolve()
+      }
+      confirmCancel.onclick = function(){ 
+        confirmModal.style.display = 'none'
+        reject()
+      }
+    });
+    
+  }
+  /* ----------------工具函数部分-------------- */
 
-  // 请求
+   /* ------------------请求部分 开始--------------------------------- */
+  //  删除数据
   function del(id) {
     _ajax({
       url: 'http://localhost:3000/deleteUser',
@@ -287,7 +400,7 @@
       }
     })
   }
-
+  // 获取全部数据
   function getList() {
     box.innerHTML = ''
     let trNode = document.createElement('tr')
@@ -309,7 +422,7 @@
       }
     })
   }
-
+  // 根据name查询数据
   function getListByName(name) {
     box.innerHTML = ''
     let trNode = document.createElement('tr')
@@ -334,7 +447,7 @@
       }
     })
   }
-
+  // 新增数据
   function add() {
     _ajax({
       url: 'http://localhost:3000/addUser',
@@ -355,7 +468,7 @@
       }
     })
   }
-
+  // 更新数据
   function update(id) {
     _ajax({
       url: 'http://localhost:3000/updateUser',
@@ -378,6 +491,7 @@
       }
     })
   }
+  /* ------------------请求部分结束------------------------------------- */
 
   // 封装渲染表格函数
  function renderTable(item,index){
@@ -398,12 +512,12 @@
     let url = option.url || ''
     let method = option.method ? option.method.toUpperCase() : 'GET'
     let data = option.data || null
-    var formData = []
 
+    // 把请求参数变成表单格式
+    var formData = []
     for (var key in data) {
       formData.push(''.concat(key, '=', data[key]))
     }
-
     data = formData.join('&')
     if (method === 'GET') {
       url += location.search.length === 0 ? ''.concat('?', data) : ''.concat('&', data)
@@ -413,6 +527,7 @@
 
     let xhr = new XMLHttpRequest()
     xhr.open(method, url, true)
+    // 设置响应参数为传入的格式或者默认json格式
     xhr.responseType = option.responseType || 'json'
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
@@ -425,8 +540,11 @@
     }
 
     if (method === 'POST') {
-      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+      //设置发送数据的请求格式为表单格式
+      // xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+      // 设置发送数据的请求格式为json格式
+      xhr.setRequestHeader('content-type', 'application/json');
     }
-    xhr.send(method === 'POST' ? data : null)
+    xhr.send(method === 'POST' ? JSON.stringify(option.data) : null)
   }
 </script>
