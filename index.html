@@ -21,7 +21,7 @@
       margin: 0;
       width: 100%;
       height: 100%;
-
+      overflow: hidden;
     }
 
     #modal {
@@ -57,10 +57,7 @@
       cursor: pointer;
     }
 
-    .primary {
-      background: #0f82cf;
-      color: #fff;
-    }
+    
 
     button {
       border: none;
@@ -71,7 +68,14 @@
       margin: 5px;
       cursor: pointer;
     }
-
+    .primary {
+      background: #0f82cf;
+      color: #fff;
+    }
+    .danger{
+      background: #ff6666;
+      color: #fff;
+    }
     .main-item {
       display: flex;
       align-items: center;
@@ -112,6 +116,22 @@
       width: 500px;
       margin: 10px auto;
     }
+    #box{
+      border: 1px solid #ccc;
+      border-bottom:none;
+    }
+
+    #box tr th,#box tr td{
+      border-bottom:1px solid #ccc;
+      border-right:1px solid #ccc;
+      padding:5px 10px;
+    }
+    #box tr th:last-child,#box tr td:last-child{ 
+      border-right:none;
+    }
+
+
+
   </style>
 </head>
 
@@ -125,7 +145,7 @@
   </div>
 
   <div class="table-box">
-    <table id="box" border="1" cellspacing="0">
+    <table  border="0" cellspacing="0" cellpadding="0" id="box">
 
     </table>
   </div>
@@ -182,13 +202,14 @@
   }
   // 编辑和删除
   box.onclick = function (e) {
-    if (e.target.className === 'updateBtn') {
+    console.dir( e.target)
+    if (e.target.className.indexOf('updateBtn')>-1) {
       modal.style.display = 'block'
       flag = 'edit'
       let obj = JSON.parse(e.target.getAttribute('data-item'))
       gobj = obj
       detail(obj)
-    } else if (e.target.className === 'delBtn') {
+    } else if (e.target.className.indexOf('delBtn')>-1) {
       let id = e.target.getAttribute('data-id')
       del(id)
     }
@@ -224,7 +245,7 @@
   function Tips() {
     this.error = function (str, delay) {
       tipsBox.style.display = 'block'
-      tipsBox.style.background = 'hotpink'
+      tipsBox.style.background = '#ff6666'
       tipsBox.innerHTML = str
       setTimeout(() => {
         tipsBox.style.display = 'none'
@@ -266,22 +287,15 @@
   function getList() {
     box.innerHTML = ''
     let trNode = document.createElement('tr')
-    trNode.innerHTML = `<th>名字</th><th>年龄</th><th>操作</th>`
+    trNode.innerHTML = `<th>序号</th><th>id</th><th>名字</th><th>年龄</th><th>操作</th>`
     box.appendChild(trNode)
     _ajax({
       url: 'http://localhost:3000/queryAll',
       success: function (res) {
         let resData = res.data || []
         if (resData) {
-          resData.forEach(item => {
-            let trNode = document.createElement('tr')
-            trNode.innerHTML = `<th>${item.name}</th>
-            <th>${item.age}</th>
-            <th  >
-              <span class="updateBtn"  data-item='${JSON.stringify(item)}'>编辑</span>&nbsp;
-              <span class="delBtn" data-id="${item.id}">删除</span>
-            </th>`
-            box.appendChild(trNode)
+          resData.forEach((item,index) => {
+            renderTable(item,index)
           })
         }
 
@@ -295,7 +309,7 @@
   function getListByName(name) {
     box.innerHTML = ''
     let trNode = document.createElement('tr')
-    trNode.innerHTML = `<th>名字</th><th>年龄</th><th>操作</th>`
+    trNode.innerHTML = `<th>序号</th><th>id</th><th>名字</th><th>年龄</th><th>操作</th>`
     box.appendChild(trNode)
     _ajax({
       url: 'http://localhost:3000/queryName',
@@ -305,15 +319,8 @@
       success: function (res) {
         let resData = res.data || []
         if (resData) {
-          resData.forEach(item => {
-            let trNode = document.createElement('tr')
-            trNode.innerHTML = `<th>${item.name}</th>
-            <th>${item.age}</th>
-            <th  >
-              <span class="updateBtn"  data-item='${JSON.stringify(item)}'>编辑</span>&nbsp;
-              <span class="delBtn" data-id="${item.id}">删除</span>
-            </th>`
-            box.appendChild(trNode)
+          resData.forEach((item,index) => {
+            renderTable(item,index)
           })
         }
 
@@ -368,7 +375,20 @@
     })
   }
 
-
+  // 封装渲染表格函数
+ function renderTable(item,index){
+    let trNode = document.createElement('tr')
+    trNode.innerHTML = `
+      <td>${index+1}</td> 
+      <td>${item.id}</td>
+      <td>${item.name}</td>
+      <td>${item.age}</td>
+      <td  >
+        <button class="updateBtn primary"  data-item='${JSON.stringify(item)}'>编辑</button>&nbsp;
+        <button class="delBtn danger" data-id="${item.id}">删除</button>
+      </td>`
+    box.appendChild(trNode)
+  }
   // 封装请求函数
   function _ajax(option) {
     let url = option.url || ''
