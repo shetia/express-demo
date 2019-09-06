@@ -1,0 +1,218 @@
+*{
+  padding: 0;
+  margin: 0;
+} 
+html,
+body {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+/* 新增弹框 */
+#modal {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .8);
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  display: none;
+  transition:all 1s;
+  z-index: 99;
+}
+
+.dialog-box {
+  width: 300px;
+  height: 200px;
+  background: #ffffff;
+  border-radius: 3px;
+  padding: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  transition:all 1s;
+}
+.dialog-box__main{
+  margin-top: 30px;
+}
+.dialog-box__footer {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+
+}
+
+.dialog-box__footer button {
+  cursor: pointer;
+}
+
+/* 新增弹框样式 结束 */
+button {
+  border: none;
+  background: #fff;
+  border-radius: 3px;
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  margin: 5px;
+  cursor: pointer;
+}
+
+button:hover{
+  opacity: 0.8;
+}
+.primary {
+  background: #333;
+  color: #fff;
+}
+.danger{
+  background: #ff6666;
+  color: #fff;
+}
+.main-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-bottom: 10px;
+}
+
+input {
+  border-radius: 3px;
+  padding: 10px 10px;
+  border: 1px solid #ccc;
+}
+
+#tips {
+  position: fixed;
+  top: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  padding: 5px 20px;
+  border-radius: 10px;
+  color: #fff;
+  transition: all 1s;
+  display: none;
+  z-index: 999;
+}
+
+.table-box {
+  overflow-y: scroll;
+  max-width: 700px;
+  height: 600px;
+  overflow: auto;
+  text-align: center;
+  margin:10px auto;
+  position: relative;
+}
+.table-header{
+  position: -webkit-sticky;
+  position: sticky;
+  top:0px;
+  color:#fff;
+  background:#333;
+}
+.table-box table {
+    width:100%;
+}
+
+.handler {   
+  padding:10px;
+  text-align: center;
+  background:#333;
+}
+/* 自定义表格 */
+#tableList{ 
+  border-bottom:none;
+  min-width: 600px;
+  display:flex;
+  flex-direction: column;  
+  border-right:1px solid #ccc;
+  box-sizing:border-box;
+}
+.list-item{
+  border-bottom:1px solid #ccc;
+  display:flex;
+  justify-content: space-around;
+  align-items:center;
+  height: 50px;
+  line-height: 50px;
+} 
+.list-item span{
+  width:100%;
+  flex:1;
+  display:block;
+  height: 100%;
+  border-left:1px solid #ccc;
+  overflow: hidden;
+  /*设置文本框大小*/
+  white-space: nowrap;
+  /*设置内容不换行*/
+  text-overflow: ellipsis;
+  /*设置文字超出文本框的内容显示成...*/
+}
+.list-item .list-handler{
+    flex:2;
+}
+.empty-text{
+  line-height: 40px;
+  border-left:1px solid #ccc;
+  border-bottom:1px solid #ccc;
+}
+
+
+
+#box{
+  border: 1px solid #ccc;
+  border-bottom:none;
+  min-width: 600px;
+}
+
+#box tr th,#box tr td{
+  border-bottom:1px solid #ccc;
+  border-right:1px solid #ccc;
+  padding:5px 10px;
+}
+#box tr th{
+  background:#333;
+  color:#fff;
+}
+#box tr th:last-child,#box tr td:last-child{ 
+  border-right:none;
+}
+
+
+/* 确定弹框 */
+#confirmModal{
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .8);
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  display: none;
+  transition:all 1s;
+}
+.confirm-box {
+  width: 300px;
+  height: 200px;
+  background: #ffffff;
+  border-radius: 3px;
+  padding: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  transition:all 1s;
+}
+#confirmMsg{
+  font-size:16px;
+  text-align:center;
+  margin-top:40px;
+}
+.title{
+  font-size:18px;
+  text-align:center;
+}

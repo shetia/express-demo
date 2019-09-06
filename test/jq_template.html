@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!-- 这里引入模板引擎 具体详情去官网查看https://aui.github.io/art-template/zh-cn/docs/index.html -->
+  <script src="./template.js"></script>
+  <link rel="stylesheet" type="text/css" href="./index.css" />
+    
+</head>
+<body>
+  <div class="handler">
+    <input type="text" id="searchValue" placeholder="请输入名字查询">
+    <button id="searchBtn">查询</button>
+    <button id="resetBtn">重置</button>
+    <button id="addBtn" class="primary">新增</button>
+  </div>
+  <!-- 新增弹框 -->
+  <div id="modal">
+      <div class="dialog-box">
+        <div class="dialog-box__main">
+          <div class="main-item">
+            <label for="">名字</label>
+            <input type="text"  placeholder="请输入名字" id="nameValue">
+          </div>
+          <div class="main-item">
+            <label for="" >年龄</label>
+            <input type="text" placeholder="请输入数字" id="ageValue">
+          </div>
+        </div>
+        <div class="dialog-box__footer">
+          <button id="cancelBtn">取消</button>
+          <button id="confirmBtn" class="primary">确定</button>
+        </div>
+      </div>
+  </div>
+    <!-- 表格 -->
+  <div class="table-box">
+      <div id="tableList">
+        <script id="userList" type="text/html">
+          <div class="list-item table-header">
+            <span>序号</span>
+            <span>ID</span>
+            <span>名字</span>
+            <span>年龄</span> 
+            <span class="list-handler">操作</span> 
+          </div> 
+          {{if data}}
+            {{each data}}  <!-- 这里的意思时遍历data这个数组 下面就可以通过 $value 拿到每一项的内容  这是模板引擎的语法，详情可查看官网 -->
+              <div class="list-item">
+                <span>{{$index+1}}</span>
+                <span>{{$value.id}}</span>
+                <span>{{$value.name}}</span>
+                <span>{{$value.age}}</span> 
+                <span class="list-handler">
+                    <button class="updateBtn primary"  data-item="{{$value}}">编辑</button>&nbsp;
+                    <button class="delBtn danger" data-id="{{$value.id}}">删除</button>
+                </span> 
+              </div> 
+            {{/each}}  <!-- 遍历结束 --> 
+          {{else}} 
+              <div class="empty-text">暂无内容</div>
+          {{/if}}
+        </script>
+      </table>
+  </div>
+</body>
+
+</html>
+
+<!--这篇文章介绍了artTemplate的语法  https://www.cnblogs.com/susan-home/p/8548579.html -->
+<script src="./jq_version.js"> </script> 
