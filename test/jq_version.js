@@ -91,11 +91,13 @@ function Toast(){
   this.success =  fn('success')
   this.error =  fn('error')  
   function fn(type){
+    // 此处相当于  声明一个对象 然后通过键来取值 例如 object['success']
     var color = {
       success:'#43c9b2',
       error:'#f5493b',
     }[type]
     var loop
+    // 返回一个函数
     return function(msg,delay){
       if(loop){clearTimeout(loop)}
       $('#tips').show()
@@ -130,7 +132,7 @@ var toast = new Toast()
   // 把它放到body上面
   $('body').append(messageBox)
   $('#confirmModal').show()
-  // 返回一个promise对象，调用的时候就可以通过.then()执行点击确定后要执行的.catch()执行取消后执行的
+  // 返回一个promise对象，此为es6后才有，调用的时候就可以通过.then()执行点击确定后要执行的.catch()执行取消后执行的
   return new Promise(function (resolve,reject) {
     $('#confirmOK').on('click',function(){
       $('#confirmModal').hide()

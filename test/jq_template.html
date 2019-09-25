@@ -40,7 +40,9 @@
     <!-- 表格 -->
   <div class="table-box">
       <div id="tableList">
+        <!-- 嵌套模板引擎  以下内容也可以放到其他位置   但我为了整体方便阅读 我就把它放这里了-->
         <script id="userList" type="text/html">
+          <!-- 表头 -->
           <div class="list-item table-header">
             <span>序号</span>
             <span>ID</span>
@@ -48,6 +50,7 @@
             <span>年龄</span> 
             <span class="list-handler">操作</span> 
           </div> 
+          <!-- 表体 -->
           {{if data}}
             {{each data}}  <!-- 这里的意思时遍历data这个数组 下面就可以通过 $value 拿到每一项的内容  这是模板引擎的语法，详情可查看官网 -->
               <div class="list-item">

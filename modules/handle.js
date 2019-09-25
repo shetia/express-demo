@@ -28,8 +28,7 @@ var pool = mysql.createPool(poolextend({}, mysqlconfig));
 var userData = {
     add: function (req, res, next) {
         pool.getConnection(function (err, connection) {
-            var param = req.query || req.params;
-            console.log(param)
+            var param = req.query || req.params; 
             connection.query(sql.insert, [param.id, param.name, param.age], function (err, result) {
                 if (result) {
                     result = 'add'
@@ -109,7 +108,7 @@ var userData = {
             });
         });
     },
-    queryAll: function (req, res, next) {
+    queryAll: function (req, res, next) { 
         pool.getConnection(function (err, connection) {
             connection.query(sql.queryAll, function (err, result) {
                 if (result != '') {
