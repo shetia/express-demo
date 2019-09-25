@@ -6,6 +6,7 @@ var user = {
   delete: 'DELETE FROM userlist WHERE id=?',
   queryById: 'SELECT * FROM userlist WHERE id=?',
   queryByName: `SELECT * FROM userlist WHERE name LIKE CONCAT('%',?,'%')`,
-  queryAll: 'SELECT * FROM userlist'
+  queryAll: 'SELECT * FROM userlist',
+  upload:'INSERT INTO uploadfiles(fieldname, originalName, tmpName, encoding, mimetype, size, path, tmpPath, addTime) VALUES(?,?,?,?,?,?,?,?,?)'
 };
 module.exports = user;

@@ -98,10 +98,6 @@ $('#searchBtn').on('click',function(){
   getListByName()
 })
 
-
-
-
- 
 /* 接口 */
 var urlObj = {
   add:'http://localhost:3000/addUser',       //新增一条数据  必传name age
@@ -109,6 +105,7 @@ var urlObj = {
   update:'http://localhost:3000/updateUser', //根据id修改对应数据  必传id name age
   queryAll:'http://localhost:3000/queryAll',  // 查 
   queryName:'http://localhost:3000/queryName', // 根据name查询列表 必传 name
+  upload:'http://localhost:3000/upload', //   上传文件
 }
 // 页面一开始就请求一次列表拿到数据
 getAllList()
@@ -234,13 +231,12 @@ function edit(id){
 }
 
 // 文件上传
-function fileUpload(file,callback){
-  let url = "http://localhost:3000/upload";
+function fileUpload(file,callback){ 
   let form = new FormData(); // FormData 对象
   form.append("file", file); // 文件对象  这里名字要和后端接收名字一样upload.array('file')
   $.ajax({
     type:'POST',    //编辑用的是post请求，
-    url:url,
+    url:urlObj.upload,
     data: form,
     //让数据不被处理
     processData:false,

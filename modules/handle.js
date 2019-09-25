@@ -25,7 +25,6 @@ var sql = require('./sql');
 var json = require('./json');
 var fs = require('fs');
 var globalObj = require('../config')  
-console.log(globalObj.rootDir)
 // 使用连接池，提升性能
 var pool = mysql.createPool(poolextend({}, mysqlconfig));
 var userData = {
@@ -141,29 +140,33 @@ var userData = {
               console.log(err);
           }else {
             // 接收成功
-            
-            console.log('\n----------SAVING-----------\n');
             // 删除缓存文件
             fs.unlink(req.path, function(err){
                 if (err){
+                  console.log('文件:'+req.path+'删除失败！');
                     return console.error(err);
-                }
-                console.log('文件:'+req.path+'删除成功！');
+                } 
             })
             // 将文件信息写入数据库
-            var time = new Date().toJSON();
-
-            var addSQL = 'INSERT INTO uploadfiles(fieldname, originalName, tmpName, encoding, mimetype, size, path, tmpPath, addTime) VALUES(?,?,?,?,?,?,?,?,?)';
-            var addSqlParams = [req.fieldname, req.originalname, req.filename,
-                req.encoding, req.mimetype, req.size, des_file, __dirname + '/' + req.path, time];
-            
+            var time = new Date().toJSON(); 
+            // 前端传过来的参数
+            var addSqlParams = [
+              req.fieldname, 
+              req.originalname, 
+              req.filename,
+              req.encoding,
+              req.mimetype, 
+              req.size, 
+              des_file, 
+              __dirname + '/' + req.path, 
+              time
+            ] 
             // 插入数据
             pool.getConnection(function (err, connection) {
-              connection.query(addSQL, addSqlParams, function (err, result) {
+              connection.query(sql.upload, addSqlParams, function (err, result) {
                   if (err) {
                       return console.error(err);
                   }else { 
-                      console.log('\n----------SUCCEED----------\n\n');
                       var response = {
                         status:200,
                         message: '上传成功!',

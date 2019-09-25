@@ -45,7 +45,6 @@ router.post('/updateUser', function(req, res, next) {
 
 // 文件上传
 router.post('/upload', upload.array('file'),function(req, res, next) {
-
   // 文件信息
   if (req.files[0]){
       console.log("----------接收文件----------\n"); 
