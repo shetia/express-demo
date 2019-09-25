@@ -1,3 +1,4 @@
 node_modules
 /.vscode
 uploadFiles/file/*
+!**/uploadFiles/file/.gitKeep
