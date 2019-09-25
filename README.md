@@ -12,6 +12,6 @@ cnpm i
 node .\bin\www
 ```
 
-查看mysql是否启动，新建个数据库abc，把userlist.sql导入数据库中
+查看mysql是否启动，新建个数据库abc，把userlist.sql和uploadfiless.sql导入数据库中
 
-然后就可以在test文件夹内查看演示
+然后就可以在test文件夹内查看演示,由于图片路径原因，目前建议使用本地方式打开html演示文件，正在寻找解决方案

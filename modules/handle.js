@@ -23,13 +23,16 @@ var poolextend = require('./poolextend');
 var sql = require('./sql');
 // 引入json模块
 var json = require('./json');
+var fs = require('fs');
+var globalObj = require('../config')  
+console.log(globalObj.rootDir)
 // 使用连接池，提升性能
 var pool = mysql.createPool(poolextend({}, mysqlconfig));
 var userData = {
     add: function (req, res, next) {
         pool.getConnection(function (err, connection) {
             var param = req.query || req.params; 
-            connection.query(sql.insert, [param.id, param.name, param.age], function (err, result) {
+            connection.query(sql.insert, [param.id, param.name, param.age,param.fileId,param.fileUrl], function (err, result) {
                 if (result) {
                     result = 'add'
                 }
@@ -61,7 +64,7 @@ var userData = {
             return;
         }
         pool.getConnection(function (err, connection) {
-            connection.query(sql.update, [param.name, param.age, +param.id], function (err, result) {
+            connection.query(sql.update, [param.name, param.age,param.fileId,param.fileUrl, +param.id], function (err, result) {
                 if (result.affectedRows > 0) {
                     result = 'update'
                 } else {
@@ -124,6 +127,64 @@ var userData = {
                 connection.release();
             });
         });
+    },
+    upload: function (req, res, next) { 
+      var des_file =  "uploadFiles/file/" + req.originalname;
+      fs.readFile(req.path, function (error, data) {
+        if (error) {
+            return console.error(error);
+        }
+        fs.writeFile(des_file, data, function (err) {
+          if (err) {
+              // 接收失败
+              console.log("----------接收失败----------\n");
+              console.log(err);
+          }else {
+            // 接收成功
+            
+            console.log('\n----------SAVING-----------\n');
+            // 删除缓存文件
+            fs.unlink(req.path, function(err){
+                if (err){
+                    return console.error(err);
+                }
+                console.log('文件:'+req.path+'删除成功！');
+            })
+            // 将文件信息写入数据库
+            var time = new Date().toJSON();
+
+            var addSQL = 'INSERT INTO uploadfiles(fieldname, originalName, tmpName, encoding, mimetype, size, path, tmpPath, addTime) VALUES(?,?,?,?,?,?,?,?,?)';
+            var addSqlParams = [req.fieldname, req.originalname, req.filename,
+                req.encoding, req.mimetype, req.size, des_file, __dirname + '/' + req.path, time];
+            
+            // 插入数据
+            pool.getConnection(function (err, connection) {
+              connection.query(addSQL, addSqlParams, function (err, result) {
+                  if (err) {
+                      return console.error(err);
+                  }else { 
+                      console.log('\n----------SUCCEED----------\n\n');
+                      var response = {
+                        status:200,
+                        message: '上传成功!',
+                        data:{
+                          id:result.insertId,
+                          path:globalObj.rootDir+ '/' + des_file,
+                          fileName:req.filename,
+                          time:time,
+                          type:req.mimetype,
+                          size:req.size, 
+                        }
+                      };
+                      res.json( response );
+                      connection.release();
+                  }
+              })
+            })
+          }
+        })
+      })
+       
     }
 };
 module.exports = userData;

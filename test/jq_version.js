@@ -1,13 +1,28 @@
 
 var handlerType = ''    //约定一个变量，用来区分新增还是编辑
 var itemObj = {} //声明一个变量用来存储每点击编辑时的数据
+var imgObj = {} // 声明一个变量用来存储图片信息
 // 新增
 $('#addBtn').on('click',function(){
   handlerType = 'add'  // 点击新增按钮时，把它赋值为add 方便点击弹框确定按钮时判断
   $('#nameValue').val('')  //设置name的值为空
   $('#ageValue').val('') //设置age的值为空
   $('#modal').show()  //弹出新增窗口
+  $('#imgBox').html(``)
+  imgObj = {}
 })
+// 文件上传
+// 点击上传图片 
+$('#fileAdd').on('click',function(e){
+  $('#fileBtn').click()
+})
+$('#fileBtn').on('change',function(e){
+  let file = e.target.files[0]
+  fileUpload(file,function(res){ 
+    $('#imgBox').html(`<img src="${res.data.path}" width="50px" style="margin-right:10px;">`)
+    imgObj = res.data
+  })
+}) 
 
 // 弹框确认按钮
 $('#confirmBtn').on('click',function(){
@@ -58,6 +73,11 @@ $('#tableList').on('click',function(e){
     var item =JSON.parse(target.getAttribute('data-item')) 
     //把拿到的数据赋值给全局变量itemObj，这样全局就可以通过itemObj拿得到这个数据
     itemObj = item  
+    imgObj = {
+      id:item.fileId,
+      path:item.fileUrl, 
+    }
+    $('#imgBox').html(`<img src="${item.fileUrl}" width="50px" style="margin-right:10px;">`)
     // 把它赋值成edit  方便点击弹框确定按钮时判断 
     handlerType = 'edit'   
     // 编辑时要把数据带回到输入框中
@@ -79,71 +99,7 @@ $('#searchBtn').on('click',function(){
 })
 
 
-/* 工具函数 */
-// 提示
-function Toast(){
-  // 创建一个元素
-  var tips = document.createElement('div') 
-  tips.setAttribute('id','tips')
-  // 把它放到body上面
-  $('body').append(tips) 
-  // 提供两个属性
-  this.success =  fn('success')
-  this.error =  fn('error')  
-  function fn(type){
-    // 此处相当于  声明一个对象 然后通过键来取值 例如 object['success']
-    var color = {
-      success:'#43c9b2',
-      error:'#f5493b',
-    }[type]
-    var loop
-    // 返回一个函数
-    return function(msg,delay){
-      if(loop){clearTimeout(loop)}
-      $('#tips').show()
-      $('#tips').css({
-        background:color, 
-      })
-      $('#tips').html(msg)
-      loop = setTimeout(function(){
-        $('#tips').hide()
-      },delay||3000)
-    }
-  }  
-}
-// 实例化
-var toast = new Toast()
 
- // 封装个二次确认弹框
- function confirmBox(msg){ 
-  // 创建一个元素
-  var messageBox = document.createElement('div') 
-  messageBox.setAttribute('id','confirmModal')
-  messageBox.innerHTML = `
-        <div class="confirm-box">
-          <h3 class="title">提示</h3>
-          <div id="confirmMsg">${msg||'确定删除么？'}</div>
-          <div class="dialog-box__footer">
-            <button id="confirmCancel">取消</button>
-            <button id="confirmOK" class="primary">确定</button>
-          </div>
-        </div> 
-      `
-  // 把它放到body上面
-  $('body').append(messageBox)
-  $('#confirmModal').show()
-  // 返回一个promise对象，此为es6后才有，调用的时候就可以通过.then()执行点击确定后要执行的.catch()执行取消后执行的
-  return new Promise(function (resolve,reject) {
-    $('#confirmOK').on('click',function(){
-      $('#confirmModal').hide()
-      resolve()
-    }) 
-    $('#confirmCancel').on('click',function(){ 
-      $('#confirmModal').hide()
-      reject() 
-    })
-  })
-}
 
  
 /* 接口 */
@@ -213,6 +169,8 @@ function add(){
     data:{
       name:$('#nameValue').val(),  //获取name的值
       age:$('#ageValue').val(),  //获取age的值
+      fileId:imgObj.id,
+      fileUrl:imgObj.path, 
     },
     dataType:'json',
     success:function(result){ 
@@ -257,6 +215,8 @@ function edit(id){
       id:id,
       name:$('#nameValue').val(),  //获取name的值
       age:$('#ageValue').val(),  //获取age的值
+      fileId:imgObj.id,
+      fileUrl:imgObj.path, 
     },
     dataType:'json',
     success:function(result){ 
@@ -270,5 +230,95 @@ function edit(id){
         toast.error(result.msg)
       }
     }
+  })
+}
+
+// 文件上传
+function fileUpload(file,callback){
+  let url = "http://localhost:3000/upload";
+  let form = new FormData(); // FormData 对象
+  form.append("file", file); // 文件对象  这里名字要和后端接收名字一样upload.array('file')
+  $.ajax({
+    type:'POST',    //编辑用的是post请求，
+    url:url,
+    data: form,
+    //让数据不被处理
+    processData:false,
+    contentType:false,
+    dataType:'json',
+    success:function(result){  
+      if(result.status === 200){
+        callback(result)
+      }else{
+        toast.error(result.message)
+      }
+    }
+  })
+}
+
+
+  /* 工具函数 */
+// 提示
+function Toast(){
+  // 创建一个元素
+  var tips = document.createElement('div') 
+  tips.setAttribute('id','tips')
+  // 把它放到body上面
+  $('body').append(tips) 
+  // 提供两个属性
+  this.success =  fn('success')
+  this.error =  fn('error')  
+  function fn(type){
+    // 此处相当于  声明一个对象 然后通过键来取值 例如 object['success']
+    var color = {
+      success:'#43c9b2',
+      error:'#f5493b',
+    }[type]
+    var loop
+    // 返回一个函数
+    return function(msg,delay){
+      if(loop){clearTimeout(loop)}
+      $('#tips').show()
+      $('#tips').css({
+        background:color, 
+      })
+      $('#tips').html(msg)
+      loop = setTimeout(function(){
+        $('#tips').hide()
+      },delay||3000)
+    }
+  }  
+}
+// 实例化
+var toast = new Toast()
+
+ // 封装个二次确认弹框
+ function confirmBox(msg){ 
+  // 创建一个元素
+  var messageBox = document.createElement('div') 
+  messageBox.setAttribute('id','confirmModal')
+  messageBox.innerHTML = `
+        <div class="confirm-box">
+          <h3 class="title">提示</h3>
+          <div id="confirmMsg">${msg||'确定删除么？'}</div>
+          <div class="dialog-box__footer">
+            <button id="confirmCancel">取消</button>
+            <button id="confirmOK" class="primary">确定</button>
+          </div>
+        </div> 
+      `
+  // 把它放到body上面
+  $('body').append(messageBox)
+  $('#confirmModal').show()
+  // 返回一个promise对象，此为es6后才有，调用的时候就可以通过.then()执行点击确定后要执行的.catch()执行取消后执行的
+  return new Promise(function (resolve,reject) {
+    $('#confirmOK').on('click',function(){
+      $('#confirmModal').hide()
+      resolve()
+    }) 
+    $('#confirmCancel').on('click',function(){ 
+      $('#confirmModal').hide()
+      reject() 
+    })
   })
 }

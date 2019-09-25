@@ -30,6 +30,12 @@
             <label for="" >年龄</label>
             <input type="text" placeholder="请输入数字" id="ageValue">
           </div>
+          <div class="main-item">
+            <label for="" >照片</label>
+            <div id="imgBox"> </div>
+            <div id="fileAdd"> </div>
+            <input type="file" id="fileBtn" value="照片">
+          </div>
         </div>
         <div class="dialog-box__footer">
           <button id="cancelBtn">取消</button>
@@ -48,6 +54,7 @@
             <span>ID</span>
             <span>名字</span>
             <span>年龄</span> 
+            <span>照片</span> 
             <span class="list-handler">操作</span> 
           </div> 
           <!-- 表体 -->
@@ -58,6 +65,7 @@
                 <span>{{$value.id}}</span>
                 <span>{{$value.name}}</span>
                 <span>{{$value.age}}</span> 
+                <span><img src="{{$value.fileUrl}}" width="50px"></span> 
                 <span class="list-handler">
                     <button class="updateBtn primary"  data-item="{{$value}}">编辑</button>&nbsp;
                     <button class="delBtn danger" data-id="{{$value.id}}">删除</button>
