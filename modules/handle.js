@@ -4,7 +4,7 @@
  * @Author: shetia
  * @Date: 2019-09-03 20:47:32
  * @LastEditors: somebody
- * @LastEditTime: 2019-09-03 21:41:53
+ * @LastEditTime: 2020-07-27 21:57:31
  */
 /*
     数据增删改查模块封装
@@ -24,13 +24,13 @@ var sql = require('./sql');
 // 引入json模块
 var json = require('./json');
 var fs = require('fs');
-var globalObj = require('../config')  
+var globalObj = require('../config')
 // 使用连接池，提升性能
 var pool = mysql.createPool(poolextend({}, mysqlconfig));
 var userData = {
     add: function (req, res, next) {
         pool.getConnection(function (err, connection) {
-            var param = req.query || req.params; 
+            var param = req.query || req.params;
             connection.query(sql.insert, [param.id, param.name, param.age,param.fileId,param.fileUrl], function (err, result) {
                 if (result) {
                     result = 'add'
@@ -110,7 +110,7 @@ var userData = {
             });
         });
     },
-    queryAll: function (req, res, next) { 
+    queryAll: function (req, res, next) {
         pool.getConnection(function (err, connection) {
             connection.query(sql.queryAll, function (err, result) {
                 if (result != '') {
@@ -127,7 +127,7 @@ var userData = {
             });
         });
     },
-    upload: function (req, res, next) { 
+    upload: function (req, res, next) {
       var des_file =  "uploadFiles/file/" + req.originalname;
       fs.readFile(req.path, function (error, data) {
         if (error) {
@@ -138,6 +138,7 @@ var userData = {
               // 接收失败
               console.log("----------接收失败----------\n");
               console.log(err);
+              res.json( err )
           }else {
             // 接收成功
             // 删除缓存文件
@@ -145,28 +146,29 @@ var userData = {
                 if (err){
                   console.log('文件:'+req.path+'删除失败！');
                     return console.error(err);
-                } 
+                }
             })
             // 将文件信息写入数据库
-            var time = new Date().toJSON(); 
+            var time = new Date();
             // 前端传过来的参数
             var addSqlParams = [
-              req.fieldname, 
-              req.originalname, 
+              req.fieldname,
+              req.originalname,
               req.filename,
               req.encoding,
-              req.mimetype, 
-              req.size, 
-              des_file, 
-              __dirname + '/' + req.path, 
+              req.mimetype,
+              req.size,
+              des_file,
+              __dirname + '/' + req.path,
               time
-            ] 
+            ]
             // 插入数据
             pool.getConnection(function (err, connection) {
               connection.query(sql.upload, addSqlParams, function (err, result) {
                   if (err) {
+                        res.json( err )
                       return console.error(err);
-                  }else { 
+                  }else {
                       var response = {
                         status:200,
                         message: '上传成功!',
@@ -176,7 +178,7 @@ var userData = {
                           fileName:req.originalname,
                           time:time,
                           type:req.mimetype,
-                          size:req.size, 
+                          size:req.size,
                         }
                       };
                       res.json( response );
@@ -187,7 +189,7 @@ var userData = {
           }
         })
       })
-       
+
     }
 };
 module.exports = userData;

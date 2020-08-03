@@ -1,3 +1,11 @@
+<!--
+ * @Descripttion:
+ * @version:
+ * @Author: shetia
+ * @Date: 2019-09-03 20:47:32
+ * @LastEditors: somebody
+ * @LastEditTime: 2020-08-02 17:27:38
+-->
 # express-demo
 本demo结合express+node+mysql，实现前后端增删改查和文件上传。
 
@@ -17,7 +25,12 @@ cd .\express-demo
 cnpm i
 ```
 运行服务
-```
+```js
+// 在终端打开bin文件夹
+// 启动后端服务
+node www
+// 在根文件夹打开终端
+// 启动前端
 npm start
 ```
 
