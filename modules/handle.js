@@ -79,7 +79,7 @@ var userData = {
         pool.getConnection(function (err, connection) {
             connection.query(sql.queryById, id, function (err, result) {
                 if (result != '') {
-                    var _result = result;
+                    var _result = result && result[0] || {}
                     result = {
                         result: 'select',
                         data: _result
