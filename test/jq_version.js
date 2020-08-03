@@ -2,6 +2,16 @@
 var handlerType = ''    //约定一个变量，用来区分新增还是编辑
 var itemObj = {} //声明一个变量用来存储每点击编辑时的数据
 var imgObj = {} // 声明一个变量用来存储图片信息
+/* 接口 */
+const baseUrl = 'http://localhost:3000'
+var urlObj = {
+  add:baseUrl + '/addUser',       //新增一条数据  必传name age
+  del:baseUrl + '/deleteUser',   //根据id删除一条数据 必传 id    
+  update:baseUrl + '/updateUser', //根据id修改对应数据  必传id name age
+  queryAll:baseUrl + '/queryAll',  // 查 
+  queryName:baseUrl + '/queryName', // 根据name查询列表 必传 name
+  upload:baseUrl + '/upload', //   上传文件
+}
 // 新增
 $('#addBtn').on('click',function(){
   handlerType = 'add'  // 点击新增按钮时，把它赋值为add 方便点击弹框确定按钮时判断
@@ -19,7 +29,7 @@ $('#fileAdd').on('click',function(e){
 $('#fileBtn').on('change',function(e){
   let file = e.target.files[0]
   fileUpload(file,function(res){ 
-    $('#imgBox').html(`<img src="${res.data.path}" width="50px" style="margin-right:10px;">`)
+    $('#imgBox').html(`<img src="${baseUrl}${res.data.path}" width="80px" style="margin-right:10px;">`)
     imgObj = res.data
   })
 }) 
@@ -98,15 +108,7 @@ $('#searchBtn').on('click',function(){
   getListByName()
 })
 
-/* 接口 */
-var urlObj = {
-  add:'http://localhost:3000/addUser',       //新增一条数据  必传name age
-  del:'http://localhost:3000/deleteUser',   //根据id删除一条数据 必传 id    
-  update:'http://localhost:3000/updateUser', //根据id修改对应数据  必传id name age
-  queryAll:'http://localhost:3000/queryAll',  // 查 
-  queryName:'http://localhost:3000/queryName', // 根据name查询列表 必传 name
-  upload:'http://localhost:3000/upload', //   上传文件
-}
+
 // 页面一开始就请求一次列表拿到数据
 getAllList()
 /* 获取列表全部内容 */
@@ -118,6 +120,10 @@ function getAllList(){
     dataType:'json',
     success:function(result){ 
       result = result || []
+      console.log(result, 'res')
+      result.data && result.data.forEach(item => {
+        item.fileUrl = baseUrl + item.fileUrl
+      })
       if(result.code === '200'){
         var htmlContent = template('userList',result)
         $('#tableList').html(htmlContent) 

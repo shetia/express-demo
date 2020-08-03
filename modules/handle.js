@@ -172,8 +172,8 @@ var userData = {
                         message: '上传成功!',
                         data:{
                           id:result.insertId,
-                          path:globalObj.rootDir+ '/' + des_file,
-                          fileName:req.filename,
+                          path: `/${req.fieldname}/${req.originalname}`,
+                          fileName:req.originalname,
                           time:time,
                           type:req.mimetype,
                           size:req.size, 

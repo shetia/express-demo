@@ -16,6 +16,10 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users'); 
 
 var app = express();
+
+// 设置静态目录 通过http://ip:port/file/ 可访问文件夹内文件
+app.use('/file', express.static(path.join(__dirname, 'uploadFiles/file')))
+
 //设置允许跨域访问该服务.
 app.all('*', function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');

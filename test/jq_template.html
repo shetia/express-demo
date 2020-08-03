@@ -65,7 +65,11 @@
                 <span>{{$value.id}}</span>
                 <span>{{$value.name}}</span>
                 <span>{{$value.age}}</span> 
-                <span><img src="{{$value.fileUrl}}" width="50px"></span> 
+                <span>
+                  <a href="{{$value.fileUrl}}" title="点击查看" target="_blank">
+                    <img src="{{$value.fileUrl}}" width="80px">
+                  </a>
+                </span> 
                 <span class="list-handler">
                     <button class="updateBtn primary"  data-item="{{$value}}">编辑</button>&nbsp;
                     <button class="delBtn danger" data-id="{{$value.id}}">删除</button>
