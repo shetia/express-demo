@@ -19,6 +19,7 @@ var app = express();
 
 // 设置静态目录 通过http://ip:port/file/ 可访问文件夹内文件
 app.use('/file', express.static(path.join(__dirname, 'uploadFiles/file')))
+app.use('/fileBig', express.static(path.join(__dirname, 'uploadFiles/big')))
 
 //设置允许跨域访问该服务.
 app.all('*', function (req, res, next) {

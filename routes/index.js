@@ -48,9 +48,32 @@ router.post('/upload', upload.array('file'),function(req, res, next) {
   // 文件信息
   if (req.files[0]){
       console.log("----------接收文件----------\n"); 
-      console.log(req.files[0]);
+      console.log(req.files[0])
   }
   let reqData = req.files[0]
-  user.upload(reqData, res, next);
+  user.upload(reqData, res, next)
 });
+
+// 切片上传
+router.post('/chunk', function(req, res, next) {
+  // 文件信息
+  if (req){
+    console.log("----------接收切片----------\n");
+  }
+  user.chunk(req, res, next)
+});
+// 合并切片
+router.post('/merge', function (req, res, next){
+  if(req){
+    console.log('----------合并切片-------------')
+  }
+  user.merge(req, res, next)
+})
+// 校验文件是否存在
+router.post('/verify', function (req, res, next){
+  if(req){
+    console.log('----------校验文件-------------')
+  }
+  user.verify(req, res, next)
+})
 module.exports = router;
