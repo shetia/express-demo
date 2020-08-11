@@ -83,4 +83,12 @@ router.post('/clearBigDir', function (req, res, next){
   }
   user.clearBigDir(req, res, next)
 })
+// 获取本地服务器大文件夹内容列表
+router.post('/getLocationBigFiles', function (req, res, next){
+  if(req){
+    console.log('----------获取大文件列表-------------')
+  }
+  user.getLocationBigFiles(req, res, next)
+})
+
 module.exports = router;

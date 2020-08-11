@@ -229,7 +229,7 @@ var userData = {
           await fse.mkdirs(chunkDir)
         }
         console.log('--------------缓存切片------------------')
-        await fse.move(chunk.path, `${chunkDir}/${hash}`)
+        await fse.move(chunk.path, path.resolve(chunkDir, hash))
         res.end(JSON.stringify({
           status: 200,
           msg: '接收切片成功'
@@ -239,6 +239,7 @@ var userData = {
     async merge (req, res, next) {
       let data = req.body
       let {fileHash, filename, size} = data
+      console.log(data)
       let ext = extractExt(filename)  // 7.5使用hash名
       let url = `${fileHash}${ext}`
       let filePath = path.resolve(UPLOAD_DIR, url)
@@ -252,7 +253,6 @@ var userData = {
     async verify (req, res, next) {
       let params = req.body
       let {filename, fileHash} = params
-      console.log(filename, fileHash)
       let ext = extractExt(filename)
       let url = `${fileHash}${ext}`
       let filePath = path.resolve(UPLOAD_DIR, url)
@@ -274,14 +274,42 @@ var userData = {
     },
     async clearBigDir (req, res, next) {
       let files = await fse.readdir(UPLOAD_DIR)
-      await files.forEach(filePath => {
-        let url = path.resolve(UPLOAD_DIR, filePath)
-        fse.unlinkSync(url)
-      })
-      res.end(JSON.stringify({
-        status: 200,
-        msg: '清空大文件夹成功'
-      }))
+      try {
+        await files.forEach(filePath => {
+          let url = path.resolve(UPLOAD_DIR, filePath)
+          fse.unlinkSync(url)
+        })
+        res.end(JSON.stringify({
+          status: 200,
+          msg: '清空大文件夹成功'
+        }))
+      } catch (e) {
+        res.end(JSON.stringify({
+          status: 500,
+          msg: e
+        }))
+      }
+    },
+    async getLocationBigFiles (req, res, next) {
+      try {
+        let files = await fse.readdir(UPLOAD_DIR)
+        files = files.map(file => {
+          return {
+            name: file,
+            fileUrl: '/fileBig/' + file
+          }
+        })
+        res.end(JSON.stringify({
+          status: 200,
+          msg: '获取大文件夹内容成功',
+          files,
+        }))
+      } catch (e) {
+        res.end(JSON.stringify({
+          status: 500,
+          msg: e
+        }))
+      }
     }
 };
 
@@ -289,32 +317,36 @@ var userData = {
 /*
  合并文件工具函数
 */
-function pipeStream (url, writeStream){
+
+function pipeStream (path, writeStream){
   return new Promise(resolve => {
-    let readStream = fse.createReadStream(url)
-    readStream.on('end', () => {
-      fse.unlinkSync(url)
-      resolve()
-    })
-    readStream.pipe(writeStream)
+    const readStream = fse.createReadStream(path);
+    readStream.on("end", () => {
+      fse.unlinkSync(path);
+      resolve();
+    });
+    readStream.pipe(writeStream);
   })
 }
-async function mergeChunks(filePath, filename, size){
-  let chunkDir = path.resolve(UPLOAD_DIR, filename.split('.')[0])
-  console.log(chunkDir, 'chunkDir')
-  let chunksPath = await fse.readdir(chunkDir)
-  chunksPath.sort((a, b) => a.split('-')[1] - b.split('-')[1])
-  let list = chunksPath.map((chunkPath, index) => {
-    let url = path.resolve(chunkDir, chunkPath)
-    let writeStream = fse.createWriteStream(filePath, {
-      start: index * size,
-      end: (index + 1) * size
-    })
-    return pipeStream(url, writeStream)
-  })
-  await Promise.all(list)
-  // 删除文件夹
-  fse.rmdirSync(chunkDir)
+async function mergeChunks(filePath, fileHash, size){
+  const chunkDir = path.resolve(UPLOAD_DIR, fileHash);
+  const chunkPaths = await fse.readdir(chunkDir);
+  // 根据切片下标进行排序
+  // 否则直接读取目录的获得的顺序可能会错乱
+  chunkPaths.sort((a, b) => a.split("-")[1] - b.split("-")[1]);
+  await Promise.all(
+    chunkPaths.map((chunkPath, index) =>
+      pipeStream(
+        path.resolve(chunkDir, chunkPath),
+        // 指定位置创建可写流
+        fse.createWriteStream(filePath, {
+          start: index * size,
+          end: (index + 1) * size
+        })
+      )
+    )
+  );
+  fse.rmdirSync(chunkDir); // 合并后删除保存切片的目录
 }
 // 提取后缀名
 function extractExt (filename) {
