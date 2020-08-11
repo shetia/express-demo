@@ -254,20 +254,34 @@ var userData = {
       let {filename, fileHash} = params
       console.log(filename, fileHash)
       let ext = extractExt(filename)
-      let filePath = path.resolve(UPLOAD_DIR, `${fileHash}${ext}`)
+      let url = `${fileHash}${ext}`
+      let filePath = path.resolve(UPLOAD_DIR, url)
       if(fse.existsSync(filePath)){
         res.end(JSON.stringify({
           status: 200,
           msg: '文件已存在, 无需再上传',
-          shouldUpload: false
+          shouldUpload: false,
+          filePath: '/fileBig/' + url
         }))
       } else {
         res.end(JSON.stringify({
           status: 200,
           msg: '文件不存在, 请继续上传',
-          shouldUpload: true
+          shouldUpload: true,
+          uploadedList: await createUploadedList(fileHash)
         }))
       }
+    },
+    async clearBigDir (req, res, next) {
+      let files = await fse.readdir(UPLOAD_DIR)
+      await files.forEach(filePath => {
+        let url = path.resolve(UPLOAD_DIR, filePath)
+        fse.unlinkSync(url)
+      })
+      res.end(JSON.stringify({
+        status: 200,
+        msg: '清空大文件夹成功'
+      }))
     }
 };
 
@@ -275,20 +289,6 @@ var userData = {
 /*
  合并文件工具函数
 */
-// 解析请求体
-function resolvePost (req) {
-  return new Promise( resolve => {
-    let chunk = ''
-    req.on('data', data => {
-      console.log('data')
-      chunk += data
-    })
-    req.on('end', () => {
-      console.log('end')
-      resolve(JSON.parse(chunk))
-    })
-  })
-}
 function pipeStream (url, writeStream){
   return new Promise(resolve => {
     let readStream = fse.createReadStream(url)
@@ -319,5 +319,10 @@ async function mergeChunks(filePath, filename, size){
 // 提取后缀名
 function extractExt (filename) {
   return filename.slice(filename.lastIndexOf("."), filename.length); 
+}
+// 获取切片列表 返回已经上传的切片名 如果存在该文件夹, 就返回文件夹内的切片列表, 否则空
+async function createUploadedList(fileHash){
+  let filePath = path.resolve(UPLOAD_DIR, fileHash)
+  return fse.existsSync(filePath) ? await fse.readdir(filePath) : []
 }
 module.exports = userData;

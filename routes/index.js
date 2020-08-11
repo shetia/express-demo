@@ -76,4 +76,11 @@ router.post('/verify', function (req, res, next){
   }
   user.verify(req, res, next)
 })
+// 清空大文件夹
+router.post('/clearBigDir', function (req, res, next){
+  if(req){
+    console.log('----------清空大文件夹-------------')
+  }
+  user.clearBigDir(req, res, next)
+})
 module.exports = router;

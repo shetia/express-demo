@@ -1,4 +1,6 @@
 node_modules
 /.vscode
 uploadFiles/file/*
+uploadFiles/big/*
 !**/uploadFiles/file/.gitKeep
+!**/uploadFiles/big/.gitKeep
